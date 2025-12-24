@@ -1,4 +1,7 @@
-FROM php:8.1-fpm
+FROM php:8.2-fpm-alpine
 
-# Install ekstensi mysqli untuk koneksi database
-RUN docker-php-ext-install mysqli pdo pdo_mysql
+# TAMBAHKAN BARIS INI (Install Ping):
+RUN apk add --no-cache iputils
+
+# Install ekstensi MySQL (yang sudah ada sebelumnya)
+RUN docker-php-ext-install mysqli
