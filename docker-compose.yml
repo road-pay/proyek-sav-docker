@@ -1,0 +1,54 @@
+version: '3.8'
+
+services:
+  # Container 1: Web Server (Nginx)
+  web:
+    image: nginx:alpine
+    container_name: sav_nginx
+    restart: always  # Otomatis nyala jika komputer reboot
+    ports:
+      - "8080:80"
+    volumes:
+      - ./src:/var/www/html
+      - ./nginx/default.conf:/etc/nginx/conf.d/default.conf
+    depends_on:
+      - php
+    networks:
+      - sav-network
+
+  # Container 2: PHP Processor (PHP-FPM)
+  php:
+    build: ./php
+    container_name: sav_php
+    restart: always  # Otomatis nyala jika komputer reboot
+    volumes:
+      - ./src:/var/www/html
+    depends_on:
+      - db
+    networks:
+      - sav-network
+
+  # Container 3: Database (MySQL)
+  db:
+    image: mysql:8.0
+    container_name: sav_mysql
+    restart: always  # Otomatis nyala jika komputer reboot
+    environment:
+      MYSQL_ROOT_PASSWORD: rootpassword
+      MYSQL_DATABASE: crud_db
+      MYSQL_USER: user
+      MYSQL_PASSWORD: userpassword
+    volumes:
+      # 1. Simpan data agar tidak hilang (Persistent Storage)
+      - db_data:/var/lib/mysql
+      # 2. Otomatis Import db.sql saat pertama kali jalan (Clone & Run friendly)
+      - ./src/db.sql:/docker-entrypoint-initdb.d/init.sql:ro
+    networks:
+      - sav-network
+
+networks:
+  sav-network:
+    driver: bridge
+
+volumes:
+  db_data: # Volume untuk menyimpan data MySQL secara permanen
